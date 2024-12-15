@@ -2,6 +2,8 @@
 
 ¡Hola tech amigos! This repo contains my battle-tested Linux configurations that actually make you more productive (and not just make your terminal look fancy).
 
+For more detailed view, check out my [blog post](https://www.cysecroad.com/guides/linux-config-files/)
+
 ## What's Inside
 
 Essential configurations for your daily Linux life:
