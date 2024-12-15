@@ -8,27 +8,6 @@ case $- in
       *) return;;
 esac
 
-# Ignore duplicates and commands starting with space
-#export HISTCONTROL=ignoreboth:erasedups
-
-# When the shell exits, append to the history file instead of overwriting
-#shopt -s histappend
-shopt -s histappend
-export HISTCONTROL=ignoreboth:erasedups
-export PROMPT_COMMAND="history -n; history -w; history -c; history -r"
-tac "$HISTFILE" | awk '!x[$0]++' >| /tmp/tmpfile  &&
-                tac /tmp/tmpfile >| "$HISTFILE"
-rm /tmp/tmpfile
-# Keep larger history
-export HISTSIZE=10000
-export HISTFILESIZE=10000
-
-# Up/Down arrow partial history search
-bind '"\e[A": history-search-backward'
-bind '"\e[B": history-search-forward'
-
-# Force immediate writing of unique history
-#HISTIGNORE='pwd:ls:exit:clear'  # Optional: ignore common commands
 
 # check the window size after each command and, if necessary,
 # update the values of LINES and COLUMNS.
@@ -83,34 +62,6 @@ xterm*|rxvt*)
     ;;
 esac
 
-# To start tmux server on new terminal
-if command -v tmux &> /dev/null && # check if tmux is installed
-   [ -n "$PS1" ] &&                # check if interactive shell
-   [[ ! "$LAUNCHED" == "vscode" ]] && # not in VSCode
-   [[ ! "$TERM" =~ screen ]] &&    # not in screen
-   [[ ! "$TERM" =~ tmux ]] &&      # not in tmux terminal
-   [ -z "$TMUX" ]; then            # not already in tmux session
-  tmux new-session -A -s main
-fi
-
-
-# This binds VSCode terminal to tmux terminal. To disable this, add following to settings.json
-#{
-#...
-#    "terminal.integrated.profiles.linux": {
-#        "bash": {
-#            "path": "bash",
-#            "icon": "terminal-bash"
-#        },
-#    ...
-#    },
-#    "terminal.integrated.defaultProfile.linux": "bash",
-#    "terminal.integrated.env.linux": {
-#        "LAUNCHED": "vscode"
-#    },    
-#}
-
-
 # enable color support of ls and also add handy aliases
 if [ -x /usr/bin/dircolors ]; then
     test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
@@ -125,11 +76,6 @@ fi
 
 # colored GCC warnings and errors
 #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
-
-# some more ls aliases
-alias ll='ls -alF'
-alias la='ls -A'
-alias l='ls -CF'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
@@ -155,8 +101,8 @@ if ! shopt -oq posix; then
   fi
 fi
 
-# ---------------------------------------------------------------------------------
-# Functions
+# --------------------------------------------------------------------------------
+# Added
 # --------------------------------------------------------------------------------
 
 parse_git_branch() {
@@ -164,34 +110,124 @@ parse_git_branch() {
 }
 export PS1="\u@\h \[\e[32m\]\w \[\e[91m\]\$(parse_git_branch)\[\e[00m\]$ "
 
+# History Management
+shopt -s histappend
+export HISTCONTROL=ignoreboth:erasedups
+export PROMPT_COMMAND="history -n; history -w; history -c; history -r"
+# Remove duplicates from history while preserving order
+tac "$HISTFILE" | awk '!x[$0]++' >| /tmp/tmpfile  && 
+    tac /tmp/tmpfile >| "$HISTFILE"
+rm /tmp/tmpfile
+
+# Increase history size for better command recall
+export HISTSIZE=10000
+export HISTFILESIZE=10000
+
+export HISTTIMEFORMAT="%F %T "  # Add timestamps to history
+export HISTIGNORE="ls:ll:cd:pwd:bg:fg:history"  # Don't record common commands
+
+# Enable partial history search with Up/Down arrows
+bind '"\e[A": history-search-backward'
+bind '"\e[B": history-search-forward'
+
+# Autostart tmux with intelligent checks
+if command -v tmux &> /dev/null && # verify tmux installation
+   [ -n "$PS1" ] &&                # ensure interactive shell
+   [[ ! "$LAUNCHED" == "vscode" ]] && # skip in VSCode
+   [[ ! "$TERM" =~ screen ]] &&    # skip in screen
+   [[ ! "$TERM" =~ tmux ]] &&      # skip in tmux terminal
+   [ -z "$TMUX" ]; then            # skip if already in tmux
+  tmux new-session -A -s main
+fi
+# --------------------------------------------------------------------------------
+# Aliases
+# --------------------------------------------------------------------------------
+
+# Better directory listing
+alias ll='ls -alF'
+alias la='ls -A'
+alias l='ls -CF'
+alias lh='ls -lh'  # Human readable sizes
+alias lsd='ls -d */'  # List directories only
+
 # Set to prevent overwritting. Now > must be used as >| to overwrite
 set -o noclobber
 
-
-# Common use aliases
+# Navigation
 alias ..='cd ..'
 alias ...='cd ../..'
+alias cdh='cd ~'
+alias back='cd -'
+alias ..2='cd ../..'
+alias ..3='cd ../../..'
+alias ..4='cd ../../../..'
+
+# Shorcuts
 alias update='sudo apt update'
 alias cl='clear'
-alias h='history'
-alias ports='netstat -tulanp'
+
+# System commands with safer defaults
 alias mkdir='mkdir -pv'
-alias df='df -h'
-alias du='du -h'
-alias cdh='cd ~'
 alias cp='cp -i'
 alias mv='mv -i'
+# Prevent accidental data loss and system changes
+alias rm='rm -i'       # Prompt before every removal
+# Prevent root-owned directory operations that could break system
+alias chmod='chmod --preserve-root'  # Prevent recursive chmod on root
+alias chown='chown --preserve-root'  # Prevent recursive chown on root
+
+# System information
+alias h='history'
+
+# Network utilities
+alias ports='netstat -tulanp'
+alias localip='hostname -I'    # Show all local IP addresses
+alias publicip='curl -s ifconfig.me'  # Show public IP - useful for remote access setup
+alias ports='netstat -tulanp'  # Show all active ports and their processes
+alias listening='netstat -tunlp'  # Show only listening ports - good for security audits
+
+# tmux management
 alias tmux_rel='tmux source-file ~/.tmux.conf'
 alias trel='tmux source-file ~/.tmux.conf'
 alias tmuxes='tmux ls'
 alias ta='tmux attach -t'
-alias attach_tmux='tmux attach -t'
 alias tnew='tmux new -s'
-alias newt='tmux new -s'
+
+# Git shortcuts
 alias ga='git add'
 alias gaa='git add .'
 alias gc='git commit -m'
-alias commit='git commit -m'
+alias gst='git status'
 alias pull='git pull'
 alias push='git push'
-alias gst='git status'
+
+# Because typing 'python3' every time is so 2019
+alias python=python3
+alias pip=pip3
+
+# The "oops" section - because we're all human
+alias sl='ls'
+alias cd..='cd ..'
+alias grpe='grep'
+alias gti='git'
+
+# Memory and CPU monitoring shortcuts
+alias df='df -h'
+alias du='du -h'
+alias meminfo='free -m -l -h'  # Detailed memory usage in human readable format
+alias cpuinfo='lscpu'          # CPU architecture information
+alias disk='df -h | grep -v tmpfs'  # Disk usage excluding temporary filesystems
+# Process monitoring - helps identify resource hogs
+alias psmem='ps auxf | sort -nr -k 4 | head -10'  # Shows top 10 memory-consuming processes
+alias pscpu='ps auxf | sort -nr -k 3 | head -10'  # Shows top 10 CPU-consuming processes
+
+# Enhanced grep
+alias grep='grep --color=auto'     # Highlight matches in grep output
+alias egrep='egrep --color=auto'   # Same for extended grep
+alias fgrep='fgrep --color=auto'   # Same for fixed string grep
+
+# Command line productivity
+export EDITOR=vim      # Use vim as default editor
+export VISUAL=vim      # Use vim for visual editing
+set -o vi             # Enable vi-style command line editing
+

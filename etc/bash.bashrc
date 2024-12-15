@@ -70,5 +70,9 @@ if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-no
 	}
 fi
 
-# cd will always resolve to the physical path instead of following symlinks
+
+# Force cd to resolve physical paths
 set -P
+
+export EDITOR=/usr/bin/vim
+export VISUAL=/usr/bin/vim

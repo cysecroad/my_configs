@@ -71,8 +71,46 @@ $endif
 $endif
 
 
+# Case-insensitive completion
 set completion-ignore-case on
+# Esc + p/n to go up, down in history
 "\ep": history-search-backward
 "\en": history-search-forward
 
+# Completion Settings
+set show-all-if-ambiguous on      # Show list immediately if ambiguous
+set show-all-if-unmodified on     # Show list immediately if unmodified
+set completion-ignore-case on      # Case-insensitive completion
+set completion-prefix-display-length 3  # Show common prefix length
+set mark-symlinked-directories on  # Add / to symlinked directories
+set visible-stats on              # Show file type indicators
+set colored-completion-prefix on   # Color the common prefix
+set colored-stats on              # Color statistics
+
+# Ctrl+Left/Right for word movement
+"\e[1;5C": forward-word
+"\e[1;5D": backward-word
+# Alt+Left/Right for word movement (alternative terminals)
+"\e[1;3C": forward-word
+"\e[1;3D": backward-word
+
+# Better word handling
+set bind-tty-special-chars off    # Allow symbols in words
+set skip-completed-text on        # Skip completed text in word completion
+
+# Misc Settings
+set input-meta on
+set output-meta on
+set convert-meta off
+set enable-keypad on
+
+# Show mode in prompt (for vi mode)
+set show-mode-in-prompt on
+set vi-cmd-mode-string "\1\e[2 q\2"
+set vi-ins-mode-string "\1\e[6 q\2"
+
+# Python specific
+$if Python
+    set editing-mode vi
+$endif
 

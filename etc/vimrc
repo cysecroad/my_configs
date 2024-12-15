@@ -46,58 +46,100 @@ endif
 " according to the detected filetype.
 "filetype plugin indent on
 
-" The following are commented out as they cause vim to behave a lot
-" differently from regular Vi. They are highly recommended though.
-set showcmd		" Show (partial) command in status line.
-set showmatch		" Show matching brackets.
-set ignorecase		" Do case insensitive matching
-set smartcase		" Do smart case matching
-set incsearch		" Incremental search
-set autowrite		" Automatically save before commands like :next and :make
-"set hidden		" Hide buffers when they are abandoned
-set mouse=a		" Enable mouse usage (all modes)
+" Basic Setup
+set nocompatible        " Use Vim defaults instead of 100% vi compatibility
+filetype on             " Enable file type detection
+filetype plugin on      " Enable loading plugins for specific file types
+filetype indent on      " Enable loading indentation rules for specific file types
+syntax on               " Enable syntax highlighting
 
-" Source a global configuration file if available
+" Interface Improvements
+set number              " Show line numbers
+set cursorline          " Highlight current line
+set showcmd             " Show partial commands in status line
+set showmode            " Show current mode (insert/normal/visual)
+set showmatch          " Highlight matching brackets
+set wildmenu           " Enhanced command-line completion
+set wildmode=list:longest  " Complete longest common string, then list alternatives
+set wildignore=*.docx,*/jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx  " Ignore binary files in completion
+
+" Search Behavior
+set incsearch          " Show matches while typing search pattern
+set ignorecase         " Case-insensitive search by default
+set smartcase          " Case-sensitive if search contains uppercase
+set hlsearch           " Highlight all search matches
+nnoremap <CR> :noh<CR><CR>    " Clear search highlighting with Enter
+
+" Indentation and Formatting
+set shiftwidth=2       " Number of spaces for auto-indent
+set tabstop=2          " Number of spaces that <Tab> counts for
+set expandtab          " Convert tabs to spaces
+set autoindent         " Copy indent from current line when starting a new line
+filetype plugin indent on  " Smart indentation based on file type
+
+" File Management
+set autowrite          " Auto-save before commands like :next and :make
+set nobackup           " Don't create backup files
+
+" Custom Key Mappings
+inoremap jj <esc>      " Quick escape from insert mode
+nnoremap <space> :     " Use space as command trigger
+nnoremap o o<esc>      " Add new line below without entering insert mode
+nnoremap O O<esc>      " Add new line above without entering insert mode
+nnoremap Y y$          " Make Y behave like D and C (to end of line)
+
+" Mouse Support
+set mouse=a            " Enable mouse in all modes
+
+" External Configuration
 if filereadable("/etc/vim/vimrc.local")
   source /etc/vim/vimrc.local
 endif
 
-" Added
-set nocompatible
-filetype on
-filetype plugin on
-filetype indent on
+" More intuitive split navigation using Ctrl + hjkl
+nnoremap <C-J> <C-W><C-J>    " Move to split below
+nnoremap <C-K> <C-W><C-K>    " Move to split above
+nnoremap <C-L> <C-W><C-L>    " Move to split right
+nnoremap <C-H> <C-W><C-H>    " Move to split left
 
-syntax on
+" Natural split opening - matches western reading direction
+set splitbelow      " New horizontal splits appear below
+set splitright      " New vertical splits appear right
 
-set number
+" Use system clipboard for all operations
+set clipboard=unnamed,unnamedplus   " Seamless copy/paste with system
 
-set cursorline
+" Persistent undo - keep undo history across sessions
+if has('persistent_undo')
+    set undofile
+    set undodir=~/.vim/undo    " Store undo files separately
+endif
 
-set shiftwidth=2
-set tabstop=2
-set expandtab
-filetype plugin indent on
-set autoindent
+" Enhanced status line with useful information
+set laststatus=2    " Always show status line
+" Detailed status line format
+set statusline=%F%m%r%h%w%=(%{&ff}/%Y)\ (line\ %l\/%L,\ col\ %c)
 
-set nobackup
+" Code folding configuration
+set foldmethod=indent    " Fold based on indentation
+set foldnestmax=10      " Prevent too many folds
+set nofoldenable        " Start with folds open
+set foldlevel=2         " Set initial fold level
 
-set incsearch
-set ignorecase
-set smartcase
+" Whitespace visualization - spot problematic spaces and tabs
+set listchars=tab:>·,trail:~,extends:>,precedes:<,space:·
+set list                " Show whitespace characters
 
-set showcmd
-set showmode
-set hlsearch
+" Auto-reload files changed outside vim
+set autoread
+au FocusGained,BufEnter * :checktime   " Check for file changes when vim regains focus
 
-set wildmenu
-set wildmode=list:longest
-set wildignore=*.docx,*/jpg,*.png,*.gif,*.pdf,*.pyc,*.exe,*.flv,*.img,*.xlsx
+" Auto-complete brackets and indent
+inoremap {<CR> {<CR>}<ESC>O   " Auto-complete curly braces
+inoremap [<CR> [<CR>]<ESC>O   " Auto-complete square brackets
+inoremap (<CR> (<CR>)<ESC>O   " Auto-complete parentheses
 
-inoremap jj <esc>
-nnoremap <space> :
-nnoremap o o<esc>
-nnoremap O O<exc>
-
-nnoremap Y y$
-
+" Easier buffer management
+nnoremap <silent> <Leader>b :buffers<CR>    " List all buffers
+nnoremap gb :bnext<CR>                      " Go to next buffer
+nnoremap gB :bprevious<CR>                  " Go to previous buffer
